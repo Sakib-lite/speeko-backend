@@ -1,41 +1,44 @@
 import express, { NextFunction, Request, Response } from 'express';
 import User, { UserDocument } from '../models/userModel';
-import bcryptjs from 'bcryptjs';
+import catchAsync from './../utils/catchAsync';
+import { AppError } from '../utils/appError';
 
-export const signup = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
+export const signup = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
     const { name, email, password, confirmPassword } = req.body;
-    if (!email || !name || !password) throw new Error('Fill up all the fields');
-    if (password !== confirmPassword) throw new Error("Password doesn't match");
+    if (!email || !name || !password || !confirmPassword)
+      return next(new AppError('Fill up all the fields', 406));
+    if (password !== confirmPassword)
+      return next(new AppError("Password doesn't match", 406));
     const user = await User.findOne({ email });
-    if (user) throw new Error('User already exists with this email');
+    if (user)
+      return next(new AppError('User already exists with this email', 409));
     let newUser = await User.create({
       name,
       email,
       password,
     });
-    newUser.password='undefined';
-    newUser.isAdmin=undefined
+    newUser.password = undefined;
+    newUser.isAdmin = undefined;
 
-    
-    res.status(200).json({
+    res.status(201).json({
       status: 'success',
       data: newUser,
     });
-  } catch (err) {
-    console.log(err);
   }
-};
+);
 
-export const login = (req: Request, res: Response) => {
-  res
-    .status(200)
-    .json({ status: 'status', message: 'you are logged in', user: req.user });
-};
+export const login = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    if (req.user) req.user.password = undefined;
+    if (!req.user) return next(new AppError('No session', 404));
+    res.status(200).json({
+      status: 'success',
+      message: 'You are logged in',
+      user: req.user,
+    });
+  }
+);
 
 export const logout = (req: Request, res: Response, next: NextFunction) => {
   req.logOut(function (err) {
@@ -43,7 +46,11 @@ export const logout = (req: Request, res: Response, next: NextFunction) => {
       return next(err);
     }
     res.clearCookie('connect.sid');
-    res.json({ status: 'success', message: 'you logged out', user: req.user });
+    res.json({
+      status: 'success',
+      message: 'You are logged out',
+      user: req.user,
+    });
   });
 };
 
@@ -61,7 +68,7 @@ export const isAdministratorMiddleware = (
       } else {
         res.send("Sorry, only admin's can perform this.");
       }
-    }).select('isAdmin');
+    }).select('+isAdmin');
   } else {
     res.send('Sorry, you arent logged in');
   }
@@ -76,11 +83,7 @@ export const getUser = (req: Request, res: Response) => {
 
 type Users = UserDocument[] | [];
 
-export const getAllUsers = async (req: Request, res: Response) => {
-  try {
-    const users: Users = await User.find().select('isAdmin');
-    res.status(200).json({ status: 'success', data: users });
-  } catch (err) {
-    console.log(err);
-  }
-};
+export const getAllUsers = catchAsync(async (req: Request, res: Response) => {
+  const users: Users = await User.find().select('isAdmin');
+  res.status(200).json({ status: 'success', data: users });
+});

@@ -1,12 +1,12 @@
-import express, { Application, Request, Response } from 'express';
+import express, { Application, Request, Response} from 'express';
 import { connectToDatabase } from './database/db';
 import authRoutes from './routes/authRoutes';
 import passport from 'passport';
 import sessions from 'express-session';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-
 import './services/Passport';
+import errorController from './controllers/errorController';
 
 if(process.env.NODE_ENV !== 'production')require('dotenv').config(); //environment variable
 const app: Application = express();
@@ -53,6 +53,7 @@ connectToDatabase();
 
 app.use('/auth', authRoutes);
 
+app.use(errorController)
 
 app.listen(process.env.PORT || 5001, (): void =>
   console.log(`app is running at @${process.env.PORT || 5001}`)
