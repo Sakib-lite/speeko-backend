@@ -7,6 +7,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import './services/Passport';
 import errorController from './controllers/errorController';
+import { registerSocket } from './socket.io/socketServer';
 
 if(process.env.NODE_ENV !== 'production')require('dotenv').config(); //environment variable
 const app: Application = express();
@@ -55,7 +56,8 @@ app.use('/auth', authRoutes);
 
 app.use(errorController)
 
-app.listen(process.env.PORT || 5001, (): void =>
+const server=app.listen(process.env.PORT || 5001, (): void =>
   console.log(`app is running at @${process.env.PORT || 5001}`)
 );
 
+registerSocket(server)
