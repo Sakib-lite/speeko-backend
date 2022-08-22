@@ -1,4 +1,4 @@
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { User } from 'socket.io/dist/socket';
 import { addNewConnectedUsers } from '../storeSocketUsers';
 

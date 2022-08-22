@@ -29,7 +29,6 @@ passport.use(
       proxy: true,
     },
     async (accessToken, refreshToken, profile, done) => {
-      console.log('  profile', profile)
       const user = await User.findOne({ googleId: profile.id });
 
       // If user doesn't exist creates a new user. (similar to sign up)
@@ -55,13 +54,14 @@ passport.use(
 passport.use(
   'local',
   new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
-    User.findOne({  email: email }).select('password')
+    User.findOne({  email: email }).select('+password')
       .then((user) => {
         if (!user) {
           return done(null, false, {
             message: 'Incorrect username and password. ',
           });
         }
+       if(!user.password) return done(null, false,{message:"password not found"})
         return bcrypt.compareSync(password, user.password)
           ? done(null, user)
           : done(null, false, { message: 'Incorrect username and password. ' });

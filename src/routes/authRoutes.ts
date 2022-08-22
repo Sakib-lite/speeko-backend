@@ -19,11 +19,7 @@ router.get(
 );
 router.post('/signup', signup);
 
-router.post("/login", passport.authenticate("local"), (req:Request, res: Response) => {
-  res.status(200).json({
-    status: 'success',message:"You are now logged in"
-  })
-});
+router.post("/login", passport.authenticate("local"),login);
 
 router.get('/logout', logout);
 router.get('/user',getUser);

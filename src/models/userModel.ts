@@ -1,38 +1,53 @@
 import mongoose, { Document } from 'mongoose';
 import bcrypt from 'bcryptjs';
-
+const validator = require('validator');
 // type verifyPasswordFunction = (candidatePassword: string, cb: (err: any, isMatch: any) => void) => void;
 
 export type UserDocument = Document & {
   name: string;
   email: string;
   googleId?: string;
-  password: string ;
+  password: string | undefined;
   confirmPassword?: string | undefined;
   isAdmin: boolean | undefined;
   // verifyPassword: verifyPasswordFunction;
   photos?: string;
+  friends: [];
 };
 
-const userSchema = new mongoose.Schema<UserDocument>({
-  name: {
-    type: String,
-    required: [true, 'Name is a required field'],
+const userSchema = new mongoose.Schema<UserDocument>(
+  {
+    name: {
+      type: String,
+      required: [true, 'Name is a required field'],
+    },
+    email: {
+      type: String,
+      required: [true, 'Email is a required field'],
+      validate: [validator.isEmail, 'Please enter a valid email'],
+      unique:true,
+      lowercase:true
+    },
+    googleId: {
+      type: String,
+    },
+    password: {
+      type: String,
+      select: false,
+    },
+    confirmPassword: {
+      type: String,
+    },
+    isAdmin: { type: Boolean, default: false, select: false },
+    photos: { type: String, default: 'user.png' },
+    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
-  email: { type: String, required: [true, 'Email is a required field'] },
-  googleId: {
-    type: String,
-  },
-  password: {
-    type: String,
-    select: process.env.NODE_ENV === 'development',
-  },
-  confirmPassword: {
-    type: String,
-  },
-  isAdmin: { type: Boolean, default: false, select: false },
-  photos: { type: String, default: 'user.png' },
-});
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+    timestamps: true,
+  }
+);
 
 userSchema.pre('save', async function (next) {
   const SALT_WORK_FACTOR = 10;
