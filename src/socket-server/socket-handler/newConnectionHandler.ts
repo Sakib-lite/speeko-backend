@@ -1,6 +1,8 @@
 import { Server } from 'socket.io';
 import { User } from 'socket.io/dist/socket';
 import { addNewConnectedUsers } from '../storeSocketUsers';
+import { getFriends } from './friends/getFriends';
+import { getPendingInvitations } from './friends/getPendingInvitations';
 
 export const newConnectionHandler = async (
   socketId: string,
@@ -8,4 +10,6 @@ export const newConnectionHandler = async (
   io: Server
 ) => {
   addNewConnectedUsers(socketId, user.id);
+  getPendingInvitations(user.id);
+  getFriends(user.id);
 };

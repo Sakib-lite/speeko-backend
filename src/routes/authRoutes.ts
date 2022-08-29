@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import passport from 'passport';
-import { getAllUsers, getUser, isAdministratorMiddleware, login, logout, signup } from '../controllers/authController';
+import { getAllUsers, getUser, login, logout, signup } from '../controllers/authController';
 
 const router = express.Router();
 
@@ -24,7 +24,7 @@ router.post("/login", passport.authenticate("local"),login);
 router.get('/logout', logout);
 router.get('/user',getUser);
 
-router.get("/users", isAdministratorMiddleware, getAllUsers);
+router.get("/all-users", getAllUsers);
 
 
 export default router;

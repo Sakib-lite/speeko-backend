@@ -1,4 +1,4 @@
-import express, { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import User, { UserDocument } from '../models/userModel';
 import catchAsync from './../utils/catchAsync';
 import { AppError } from '../utils/appError';
@@ -84,6 +84,6 @@ export const getUser = (req: Request, res: Response) => {
 type Users = UserDocument[] | [];
 
 export const getAllUsers = catchAsync(async (req: Request, res: Response) => {
-  const users: Users = await User.find().select('isAdmin');
+  const users: Users = await User.find().select('name email');
   res.status(200).json({ status: 'success', data: users });
 });

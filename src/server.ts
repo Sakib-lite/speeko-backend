@@ -8,7 +8,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import './services/Passport';
 import errorController from './controllers/errorController';
-import { registerSocket } from './socket.io/socketServer';
+import { registerSocket } from './socket-server/socketServer';
 
 if (process.env.NODE_ENV !== 'production') require('dotenv').config(); //environment variable
 const app: Application = express();

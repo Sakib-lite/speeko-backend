@@ -1,26 +1,25 @@
 import { NextFunction, Request, Response } from 'express';
 import { Types } from 'mongoose';
-import Invitation from '../models/invitationModel';
-import User from '../models/userModel';
-import { AppError } from '../utils/appError';
-import catchAsync from '../utils/catchAsync';
+import Invitation from '../../models/invitationModel';
+import User, { UserDocument } from '../../models/userModel';
+import { getPendingInvitations } from '../../socket-server/socket-handler/friends/getPendingInvitations';
+import { AppError } from '../../utils/appError';
+import catchAsync from '../../utils/catchAsync';
 
-export const createInvitation = catchAsync(
+export const sendInvitation = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) return next(new AppError('You are not logged in', 401));
 
     const email = req.user?.email;
     const senderId = req.user?._id;
     const targetEmail = req.body.email;
-    console.log('  targetEmail', targetEmail)
 
     //user can't send invitation to himself
     if (targetEmail === email)
       return next(new AppError("You can't send invitation to yourself", 409));
 
     //check invitation email exist in database
-    const targetUser = await User.findOne({ email:targetEmail });
-    console.log('  targetUser', targetUser)
+    const targetUser = await User.findOne({ email: targetEmail });
 
     if (!targetUser) return next(new AppError('No user found ', 404));
 
@@ -39,10 +38,14 @@ export const createInvitation = catchAsync(
       (id: Types.ObjectId) => id.toString() === senderId.toString()
     );
 
-    if (checkFriendList) return next(new AppError('Friend Already Added', 409));
+    if (checkFriendList)
+      return next(new AppError('Friend has already been added', 409));
 
     //invitation saving in database
     await Invitation.create({ senderId, receiverId });
+
+    //sending the invitation list to users through the socket
+    getPendingInvitations(receiverId.toString()); 
 
     return res.status(201).json({
       status: 'success',
@@ -50,12 +53,3 @@ export const createInvitation = catchAsync(
     });
   }
 );
-
-
-export const getInvitations= catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
-
-if(!req.user) return next(new AppError('You are not logged in.',401));
-const id=req.user._id
-const invitations=await Invitation.find({receiverId:id}).populate({path:'senderId',select:'name email'}).select('-receiverId')
-res.status(201).json({status: 'success',results:invitations.length,data:invitations})
-})

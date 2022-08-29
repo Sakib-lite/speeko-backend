@@ -1,4 +1,4 @@
-import mongoose, { Document } from 'mongoose';
+import mongoose, { Document, Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
 const validator = require('validator');
 // type verifyPasswordFunction = (candidatePassword: string, cb: (err: any, isMatch: any) => void) => void;
@@ -12,7 +12,7 @@ export type UserDocument = Document & {
   isAdmin: boolean | undefined;
   // verifyPassword: verifyPasswordFunction;
   photos?: string;
-  friends: [];
+  friends: Types.ObjectId[];
 };
 
 const userSchema = new mongoose.Schema<UserDocument>(
