@@ -1,10 +1,19 @@
 import { Server } from 'http';
 import socket, { Socket } from 'socket.io';
+import { UserDocument } from '../models/userModel';
 import { authSocket } from './authSocket';
 import { setInstance } from './getInstance';
 import { disconnectHandler } from './socket-handler/disconnectHandler';
 import { onlineUsers } from './socket-handler/friends/onlineUsers';
 import { newConnectionHandler } from './socket-handler/newConnectionHandler';
+
+//adding user type in socket.d.ts 
+declare module 'socket.io' {
+  interface Socket {
+    user: UserDocument
+  }
+}
+
 
 export const registerSocket = (
   server: Partial<socket.ServerOptions> | Server | undefined
@@ -16,23 +25,27 @@ export const registerSocket = (
     },
   });
 
+  //sharing the io instance through out the apps
   setInstance(io);
 
+  //setting socket.user 
   io.use((socket: Socket, next) => {
     authSocket(socket, next);
   });
 
   io.on('connection', (socket: Socket) => {
   
+    //adding new user in map list
     newConnectionHandler(socket.id, socket.user, io);
     console.log('user connected');
 
+    //delete user from map list
     socket.on('disconnect', () => {
       disconnectHandler(socket);
     });
   });
 
-  //checking the user is online, every 5 seconds
+  //checking the user is online, in every 10 seconds
   setInterval(() => {
     onlineUsers();
   },1000*10);

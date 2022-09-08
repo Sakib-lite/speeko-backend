@@ -108,6 +108,7 @@
     "node_modules"  /* exclude everything in  node_modules */
 ],"typeRoots": [
   "./src/typings",
-  "./node_modules/@types"
-]
+  "./node_modules/@types",
+  "./src/types"
+],
 }
