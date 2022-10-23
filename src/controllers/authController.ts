@@ -2,21 +2,38 @@ import { NextFunction, Request, Response } from 'express';
 import User, { UserDocument } from '../models/userModel';
 import catchAsync from './../utils/catchAsync';
 import { AppError } from '../utils/appError';
+import { v2 as cloudinary } from 'cloudinary'
+
+require('dotenv').config();
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export const signup = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { name, email, password, confirmPassword } = req.body;
-    if (!email || !name || !password || !confirmPassword)
+    const { name, email, password, confirmPassword,image } = req.body;
+
+    if (!email || !name || !password || !confirmPassword || !image)
       return next(new AppError('Fill up all the fields', 406));
     if (password !== confirmPassword)
       return next(new AppError("Password doesn't match", 406));
     const user = await User.findOne({ email });
     if (user)
       return next(new AppError('User already exists with this email', 409));
+
+      const uploadResponse = await cloudinary.uploader.upload(image, {
+        upload_preset: 'd3z47zme',
+    });
+
+
     let newUser = await User.create({
       name,
       email,
       password,
+      photos:uploadResponse.secure_url
     });
     newUser.password = undefined;
     newUser.isAdmin = undefined;
