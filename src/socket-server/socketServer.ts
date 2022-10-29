@@ -3,6 +3,7 @@ import socket, { Socket } from 'socket.io';
 import { UserDocument } from '../models/userModel';
 import { authSocket } from './authSocket';
 import { setInstance } from './getInstance';
+import { setSocketInstance } from './getSocketInstance';
 import { disconnectHandler } from './socket-handler/disconnectHandler';
 import { onlineUsers } from './socket-handler/friends/onlineUsers';
 import { newConnectionHandler } from './socket-handler/newConnectionHandler';
@@ -36,12 +37,15 @@ export const registerSocket = (
 
   io.on('connection', (socket: Socket) => {
     //adding new user in map list
-    newConnectionHandler(socket.id, socket.user, io);
+    newConnectionHandler(socket, io);
     console.log('user connected');
+
+    setSocketInstance(socket)
 
     // get private message and store it in message model
     socket.on('private-message', (data) => {
       privateMessageHandler(socket, data);
+      // fetch last messages of friend every time user send a new message
     });
 
     socket.on('private-chat-history', (data) => {
@@ -57,5 +61,5 @@ export const registerSocket = (
   //checking the user is online, in every 10 seconds
   setInterval(() => {
     onlineUsers();
-  }, 1000 * 10);
+  }, 1000 * 30);
 };

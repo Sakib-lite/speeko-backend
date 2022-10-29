@@ -6,7 +6,7 @@ export const getPendingInvitations = async (userId: string) => {
   try {
     //populating the sender for rendering invitation list
     const invitations = await Invitation.find({ receiverId: userId })
-      .populate({ path: 'senderId', select: 'name email' })
+      .populate({ path: 'senderId', select: 'name email photos' })
       .select('-receiverId');
 
     const userList = getActiveSocketUserList(userId);

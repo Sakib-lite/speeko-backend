@@ -1,7 +1,9 @@
 import { Types } from 'mongoose';
 import Conversation from '../../../models/conversationModel';
 import { getInstanceIO } from '../../getInstance';
+import { getSocketInstance } from '../../getSocketInstance';
 import { getActiveSocketUserList } from '../../storeSocketUsers';
+import { getLastMessagesHandler } from '../getLastMessagesHandler';
 
 export const sendChatHistory = async (
   conversationId: Types.ObjectId,
@@ -14,16 +16,18 @@ export const sendChatHistory = async (
       populate: {
         path: 'author',
         model: 'User',
-        select: 'name id',
+        select: 'name id photos',
       },
     });
 
     if (conversation) {
       // getting the io(server) instance
       const io = getInstanceIO();
+      const socket=getSocketInstance()
 
       //   after loading messenger this event will trigger for every socket user. who have previous conversation history
       if (specificUser) {
+        getLastMessagesHandler(socket)
         return io.to(specificUser).emit('private-chat-history', {
           messages: conversation.messages,
           participants: conversation.participants,
@@ -37,6 +41,8 @@ export const sendChatHistory = async (
         );
 
         activeParticipantList.forEach((friendSocketId: string) => {
+         
+          getLastMessagesHandler(socket)
           io.to(friendSocketId).emit('private-chat-history', {
             messages: conversation.messages,
             participants: conversation.participants,
@@ -44,6 +50,7 @@ export const sendChatHistory = async (
         });
       });
     }
+
   } catch (err) {
     console.log(err);
   }

@@ -1,15 +1,16 @@
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { UserDocument } from '../../models/userModel';
 import { addNewConnectedUsers } from '../storeSocketUsers';
 import { getFriends } from './friends/getFriends';
 import { getPendingInvitations } from './friends/getPendingInvitations';
+import { getLastMessagesHandler } from './getLastMessagesHandler';
 
 export const newConnectionHandler = async (
-  socketId: string,
-  user: UserDocument,
+  socket: Socket,
   io: Server
 ) => {
-  addNewConnectedUsers(socketId, user.id);
-  getPendingInvitations(user.id);
-  getFriends(user.id);
+  addNewConnectedUsers(socket.id, socket.user.id);
+  getPendingInvitations(socket.user.id);
+  getFriends(socket.user.id);
+  getLastMessagesHandler(socket)
 };

@@ -7,7 +7,7 @@ export const getFriends = async (userId: string) => {
     //populating the friends array for rendering chat list
     const user = await User.findById(userId).populate({
       path: 'friends',
-      select: 'name email _id',
+      select: 'name email _id photos',
     });
 
     const userList = getActiveSocketUserList(userId);

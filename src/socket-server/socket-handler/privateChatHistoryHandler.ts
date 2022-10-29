@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import { Socket } from 'socket.io';
 import Conversation from '../../models/conversationModel';
 import { sendChatHistory } from './friends/getChatHistory';
+import { getLastMessagesHandler } from './getLastMessagesHandler';
 
 export const privateChatHistoryHandler = async (
   socket: Socket,
@@ -18,6 +19,7 @@ export const privateChatHistoryHandler = async (
 
     if (conversation) {
       sendChatHistory(conversation.id.toString(), socket.id);
+      getLastMessagesHandler(socket)
     }
   } catch (err) {
     console.log(err);

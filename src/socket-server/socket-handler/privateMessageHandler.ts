@@ -3,6 +3,7 @@ import Conversation from '../../models/conversationModel';
 import Message from '../../models/messageModel';
 import { Types } from 'mongoose';
 import { sendChatHistory } from './friends/getChatHistory';
+import { getLastMessagesHandler } from './getLastMessagesHandler';
 
 type Data = {
   message?: string;
@@ -37,6 +38,7 @@ export const privateMessageHandler = async (socket: Socket, data: Data) => {
 
       // sending the recent message through socket
       sendChatHistory(conversation.id.toString());
+
     } else {
       // or new conversattion will be created
       const newConversation = await Conversation.create({
@@ -46,6 +48,7 @@ export const privateMessageHandler = async (socket: Socket, data: Data) => {
       // sending the recent message through socket
       sendChatHistory(newConversation.id.toString());
     }
+    getLastMessagesHandler(socket)
   } catch (err) {
     console.log(err);
   }

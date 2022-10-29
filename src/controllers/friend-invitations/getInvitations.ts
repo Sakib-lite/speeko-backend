@@ -10,7 +10,7 @@ export const getInvitations = catchAsync(
     if (!req.user) return next(new AppError('You are not logged in.', 401));
     const id = req.user._id;
     const invitations = await Invitation.find({ receiverId: id })
-      .populate({ path: 'senderId', select: 'name email' })
+      .populate({ path: 'senderId', select: 'name email photos' })
       .select('-receiverId');
 
       
