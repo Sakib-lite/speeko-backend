@@ -17,21 +17,25 @@ const app: Application = express();
 app.disable('X-Powered-By');
 
 app.set('trust proxy', 1);
-const allowedOrigins = ['http://localhost:3000'];
-const options: cors.CorsOptions = {
-  allowedHeaders: [
-    'Origin',
-    'X-Requested-With',
-    'Content-Type',
-    'Accept',
-    'X-Access-Token',
-  ],
-  credentials: true,
-  methods: 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
-  origin: allowedOrigins,
-  preflightContinue: false,
-};
-app.use(cors<Request>(options));
+
+app.use(
+  cors({
+    origin: '*',
+    credentials: true,
+    methods: 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
+    preflightContinue: false,
+  })
+);
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+    methods: 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
+    preflightContinue: false,
+  })
+);
+
+
 
 app.use(cookieParser());
 app.use(express.json({ limit: '50mb' }));
